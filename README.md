@@ -1,2 +1,0 @@
-# dela-images
-dela-images
