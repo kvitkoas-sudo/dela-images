@@ -391,6 +391,18 @@
   .res-table td.rest-col { font-weight: 500; white-space: nowrap; }
   .res-table td.rest-col.neg { color: var(--warn); }
   .res-table .prog { color: var(--warn); font-size: 0.78rem; white-space: nowrap; }
+  /* Группы колонок: деньги / время */
+  .res-table .grp-money { background: rgba(80, 200, 140, 0.05); }
+  .res-table .grp-time  { background: rgba(120, 160, 230, 0.05); }
+  .res-table td.grp-start, .res-table th.grp-start { border-left: 1px solid var(--border); }
+  .res-table td.grp-end,   .res-table th.grp-end   { border-right: 1px solid var(--border); }
+  .res-table .grp-head th { border-bottom: none; padding-bottom: 2px; }
+  .res-table th.grp-title {
+    text-align: center; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.02em;
+    padding-top: 8px;
+  }
+  .res-table th.grp-money.grp-title { color: #6bd6a0; }
+  .res-table th.grp-time.grp-title  { color: #8fb3f0; }
 
   .empty { color: var(--text-faint); text-align: center; padding: 2rem; font-size: 0.9rem; }
   footer { margin-top: 2rem; color: var(--text-faint); font-size: 0.78rem; text-align: center; }
@@ -934,12 +946,12 @@ function renderResources() {
     rows +=
       '<tr>' +
       '<td class="r-m">' + esc(disp) + '</td>' +
-      '<td class="plan-dim">' + pl.spend.toLocaleString('ru-RU') + '</td>' +
-      '<td>' + (pl.factSpend ? pl.factSpend.toLocaleString('ru-RU') : '—') + '</td>' +
-      '<td class="rest-col">' + restMoney.toLocaleString('ru-RU') + '</td>' +
-      '<td class="plan-dim">' + pl.hours + '</td>' +
-      '<td>' + (pl.factHours ? pl.factHours : '—') + '</td>' +
-      '<td class="rest-col">' + restHours + '</td>' +
+      '<td class="plan-dim grp-money grp-start">' + pl.spend.toLocaleString('ru-RU') + '</td>' +
+      '<td class="grp-money">' + (pl.factSpend ? pl.factSpend.toLocaleString('ru-RU') : '—') + '</td>' +
+      '<td class="rest-col grp-money grp-end">' + restMoney.toLocaleString('ru-RU') + '</td>' +
+      '<td class="plan-dim grp-time grp-start">' + pl.hours + '</td>' +
+      '<td class="grp-time">' + (pl.factHours ? pl.factHours : '—') + '</td>' +
+      '<td class="rest-col grp-time grp-end">' + restHours + '</td>' +
       '</tr>';
   });
 
@@ -949,10 +961,18 @@ function renderResources() {
       '<label class="res-load-btn sm">Выбрать файл ресурсов<input type="file" id="resFile2" accept=".csv" style="display:none"></label>' +
     '</div>' +
     '<div class="res-wrap"><table class="res-table">' +
-    '<thead><tr>' +
-    '<th>Месяц</th><th>Расход<br>план</th><th>Расход<br>факт</th><th>Остаток</th>' +
-    '<th>Часы<br>план</th><th>Часы<br>факт</th><th>Часы<br>остаток</th>' +
-    '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+    '<thead>' +
+    '<tr class="grp-head">' +
+      '<th></th>' +
+      '<th colspan="3" class="grp-money grp-start grp-end grp-title">💰 Деньги</th>' +
+      '<th colspan="3" class="grp-time grp-start grp-end grp-title">🕐 Время</th>' +
+    '</tr>' +
+    '<tr>' +
+      '<th>Месяц</th>' +
+      '<th class="grp-money grp-start">Расход<br>план</th><th class="grp-money">Расход<br>факт</th><th class="grp-money grp-end">Остаток</th>' +
+      '<th class="grp-time grp-start">Часы<br>план</th><th class="grp-time">Часы<br>факт</th><th class="grp-time grp-end">Часы<br>остаток</th>' +
+    '</tr>' +
+    '</thead><tbody>' + rows + '</tbody></table></div>';
 
   const inp2 = document.getElementById('resFile2');
   if (inp2) inp2.addEventListener('change', e => loadResFile(e.target.files[0]));
