@@ -386,6 +386,10 @@
   .res-table .ok { color: var(--success); font-size: 1rem; }
   .res-table .warn { color: var(--warn); font-weight: 500; white-space: nowrap; }
   .res-table .rest { color: var(--text-dim); font-size: 0.78rem; white-space: nowrap; }
+  .res-table td.fact { color: var(--text-dim); }
+  .res-table td.rest-col { font-weight: 500; white-space: nowrap; }
+  .res-table td.rest-col.neg { color: var(--warn); }
+  .res-table .prog { color: var(--warn); font-size: 0.78rem; white-space: nowrap; }
 
   .empty { color: var(--text-faint); text-align: center; padding: 2rem; font-size: 0.9rem; }
   footer { margin-top: 2rem; color: var(--text-faint); font-size: 0.78rem; text-align: center; }
@@ -903,38 +907,39 @@ function renderResources() {
     return;
   }
 
-  // План по месяцам из активных задач
+  // По месяцам из задач: план = все задачи, факт = только выполненные
   const plan = {};
-  ALL_TASKS.filter(t => t.status !== 'Выполнено' && t.month).forEach(t => {
+  ALL_TASKS.filter(t => t.month).forEach(t => {
     const key = normMonth(t.month);
-    const p = plan[key] || (plan[key] = { spend: 0, hours: 0 });
-    if (t.amount < 0) p.spend += -t.amount;
-    p.hours += t.hours || 0;
+    const p = plan[key] || (plan[key] = { spend: 0, factSpend: 0, hours: 0, factHours: 0 });
+    const done = t.status === 'Выполнено';
+    if (t.amount < 0) { p.spend += -t.amount; if (done) p.factSpend += -t.amount; }
+    const h = t.hours || 0;
+    p.hours += h;                    // часы план — все задачи месяца
+    if (done) p.factHours += h;      // часы факт — выполненные
   });
 
-  // Список месяцев в правильном порядке
+  // Список месяцев в правильном порядке (только из задач)
   const seen = {};
   const months = [];
-  RES_ORDER.forEach(m => { const k = normMonth(m); if (!seen[k] && (RES_AVAIL[k] || plan[k])) { seen[k]=1; months.push({disp:m, key:k}); } });
-  Object.keys(RES_AVAIL).concat(Object.keys(plan)).forEach(k => { if (!seen[k]) { seen[k]=1; months.push({disp:k, key:k}); } });
+  RES_ORDER.forEach(m => { const k = normMonth(m); if (!seen[k] && plan[k]) { seen[k]=1; months.push({disp:m, key:k}); } });
+  Object.keys(plan).forEach(k => { if (!seen[k]) { seen[k]=1; months.push({disp:k, key:k}); } });
 
   let rows = '';
   months.forEach(({disp, key}) => {
-    const av = RES_AVAIL[key] || { budget: 0, hours: 0 };
-    const pl = plan[key] || { spend: 0, hours: 0 };
-    const dHours = av.hours - pl.hours;
-    const dMoney = av.budget - pl.spend;
-    const okTime = dHours > -2;
-    const okMoney = dMoney > -5000;
+    const pl = plan[key] || { spend: 0, factSpend: 0, hours: 0, factHours: 0 };
+    const restMoney = pl.spend - pl.factSpend;   // осталось потратить
+    const restHours = pl.hours - pl.factHours;   // осталось часов
     rows +=
       '<tr>' +
       '<td class="r-m">' + esc(disp) + '</td>' +
-      '<td>' + av.budget.toLocaleString('ru-RU') + '</td>' +
       '<td>' + pl.spend.toLocaleString('ru-RU') + '</td>' +
-      '<td>' + av.hours + '</td>' +
+      '<td class="fact">' + (pl.factSpend ? pl.factSpend.toLocaleString('ru-RU') : '—') + '</td>' +
+      '<td class="rest-col">' + restMoney.toLocaleString('ru-RU') + '</td>' +
       '<td>' + pl.hours + '</td>' +
-      '<td class="r-st">' + statusCell(okTime, dHours, 'ч') + '</td>' +
-      '<td class="r-st">' + statusCell(okMoney, dMoney, '₽') + '</td>' +
+      '<td class="fact">' + (pl.factHours ? pl.factHours : '—') + '</td>' +
+      '<td class="r-st">' + progressCell(pl.factHours, pl.hours, 'ч') + '</td>' +
+      '<td class="r-st">' + progressCell(pl.factSpend, pl.spend, '₽') + '</td>' +
       '</tr>';
   });
 
@@ -945,8 +950,8 @@ function renderResources() {
     '</div>' +
     '<div class="res-wrap"><table class="res-table">' +
     '<thead><tr>' +
-    '<th>Месяц</th><th>Бюджет<br>доступно</th><th>Расход<br>план</th>' +
-    '<th>Часы<br>доступно</th><th>Часы<br>план</th>' +
+    '<th>Месяц</th><th>Расход<br>план</th><th>Расход<br>факт</th><th>Остаток</th>' +
+    '<th>Часы<br>план</th><th>Часы<br>факт</th>' +
     '<th>Статус<br>по времени</th><th>Статус<br>по сумме</th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table></div>';
 
@@ -960,6 +965,15 @@ function loadResFile(file) {
   const rd = new FileReader();
   rd.onload = ev => { RES_AVAIL = parseResCSV(ev.target.result); RES_SRC = file.name; renderResources(); };
   rd.readAsText(file, 'utf-8');
+}
+
+// Статус факт/план в виде ✓ и зелёного «+остаток»
+function progressCell(fact, plan, unit) {
+  const fmtVal = n => (unit === '₽' ? n.toLocaleString('ru-RU') : n) + ' ' + unit;
+  if (plan <= 0) return '<span class="ok">✓</span>';           // планировать нечего
+  const rest = plan - fact;
+  if (rest <= 0) return '<span class="ok">✓</span>';           // всё выполнено
+  return '<span class="ok">✓</span> <span class="rest">+' + fmtVal(rest) + '</span>';
 }
 
 function statusCell(ok, delta, unit) {
