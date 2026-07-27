@@ -939,6 +939,7 @@ function renderResources() {
       '<td class="rest-col">' + restMoney.toLocaleString('ru-RU') + '</td>' +
       '<td class="plan-dim">' + pl.hours + '</td>' +
       '<td>' + (pl.factHours ? pl.factHours : '—') + '</td>' +
+      '<td class="rest-col">' + restHours + '</td>' +
       '</tr>';
   });
 
@@ -950,7 +951,7 @@ function renderResources() {
     '<div class="res-wrap"><table class="res-table">' +
     '<thead><tr>' +
     '<th>Месяц</th><th>Расход<br>план</th><th>Расход<br>факт</th><th>Остаток</th>' +
-    '<th>Часы<br>план</th><th>Часы<br>факт</th>' +
+    '<th>Часы<br>план</th><th>Часы<br>факт</th><th>Часы<br>остаток</th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table></div>';
 
   const inp2 = document.getElementById('resFile2');
