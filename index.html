@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мои дела — план по месяцам</title>
+<style>
+  :root {
+    --bg: #16161a;
+    --panel: #1e1e24;
+    --panel-2: #26262e;
+    --panel-alt: #2a2a34;
+    --line: #33333d;
+    --text: #e8e8ec;
+    --text-dim: #9a9aa5;
+    --text-faint: #6a6a75;
+    --accent: #7c9eff;
+    --warn: #e0a878;
+    --warn-bg: #2a2118;
+    --success: #7fc99a;
+    --success-bg: #182518;
+    --danger: #d98686;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    padding: 2rem 1rem 4rem;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 912px; margin: 0 auto; }
+
+  header { margin-bottom: 2rem; }
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.4rem;
+  }
+  .sub { color: var(--text-dim); font-size: 0.9rem; }
+
+  /* Dropzone */
+  .drop {
+    border: 1.5px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    margin-bottom: 2rem;
+  }
+  .drop:hover, .drop.over {
+    border-color: var(--accent);
+    background: var(--panel);
+  }
+  .drop strong { color: var(--text); font-weight: 500; }
+  .drop .hint { font-size: 0.82rem; color: var(--text-faint); margin-top: 0.5rem; }
+  .drop.compact { padding: 1rem; font-size: 0.85rem; }
+  input[type=file] { display: none; }
+
+  /* Summary bar */
+  .totals {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+  .tcard {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 0.9rem 1rem;
+  }
+  .tcard .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-faint); margin-bottom: 0.35rem; }
+  .tcard .val { font-size: 1.15rem; font-weight: 600; letter-spacing: -0.01em; }
+  .val.neg { color: var(--warn); }
+  .val.pos { color: var(--success); }
+
+  /* Toolbar + toggle switch */
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+  .segment {
+    display: inline-flex;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+    gap: 2px;
+    flex-wrap: wrap;
+  }
+  .seg {
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font: inherit;
+    font-size: 0.82rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background .12s, color .12s;
+    white-space: nowrap;
+  }
+  .seg:hover { color: var(--text); }
+  .seg.active { background: var(--panel-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line); }
+  .seg:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .track {
+    width: 38px;
+    height: 22px;
+    border-radius: 22px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    position: relative;
+    transition: background .15s, border-color .15s;
+    flex: none;
+  }
+  .thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    transition: transform .15s, background .15s;
+  }
+  .switch input:checked + .track {
+    background: rgba(124,158,255,0.25);
+    border-color: var(--accent);
+  }
+  .switch input:checked + .track .thumb {
+    transform: translateX(16px);
+    background: var(--accent);
+  }
+  .switch input:focus-visible + .track {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .switch-label { font-size: 0.85rem; color: var(--text-dim); }
+  .done-section .month-head h2 { color: var(--text-dim); }
+
+  /* Month group */
+  .month {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+  }
+  .month-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.9rem 1.1rem;
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--line);
+  }
+  .month-head h2 { font-size: 1rem; font-weight: 600; }
+  .head-meta {
+    display: inline-grid;
+    grid-template-columns: 44px 42px 78px;
+    align-items: baseline;
+    gap: 0.5rem;
+    text-align: right;
+  }
+  .head-meta > span { text-align: right; }
+  .hsum {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--accent);
+  }
+  .month-head .msum { font-size: 0.9rem; font-weight: 600; color: var(--warn); }
+  .month-head .msum.pos { color: var(--success); }
+  .rows { padding: 0.4rem; }
+
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.55rem 0.7rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.92rem;
+  }
+  .row + .row { margin-top: 2px; }
+  .row .task { display: flex; align-items: center; gap: 0.6rem; min-width: 0; }
+  .row .task .name { overflow: hidden; text-overflow: ellipsis; }
+  .row .amount { white-space: nowrap; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .row-meta {
+    display: inline-grid;
+    grid-template-columns: 44px 42px 78px;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .row-meta > span { text-align: right; }
+  .hours {
+    font-size: 0.78rem;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .startdate {
+    font-size: 0.75rem;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .amount.neg { color: var(--warn); }
+  .amount.pos { color: var(--success); }
+  .row.done .name { text-decoration: line-through; color: var(--text-faint); }
+  .row.done { opacity: 0.7; }
+
+  .cat {
+    font-size: 0.68rem;
+    padding: 1px 7px;
+    border-radius: 20px;
+    background: var(--panel-2);
+    color: var(--text-dim);
+    border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .deadline {
+    font-size: 0.68rem;
+    padding: 1px 7px;
+    border-radius: 20px;
+    background: rgba(217,134,134,0.15);
+    color: var(--danger);
+    border: 1px solid rgba(217,134,134,0.4);
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .prio-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .prio-Высокий { background: var(--danger); }
+  .prio-Средний { background: var(--warn); }
+  .prio-Низкий { background: var(--text-faint); }
+  .prio-Обсудить { background: var(--accent); }
+
+  .comment { font-size: 0.75rem; color: var(--text-faint); padding: 0 0.7rem 0.5rem 1.9rem; margin-top: -2px; max-width: 50%; }
+
+  /* Gantt */
+  .gantt { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.5rem 0 0.75rem; overflow-x: auto; }
+  .gantt-inner { display: block; width: max-content; }
+  .g-head, .g-row { padding-right: 0.75rem; }
+  .gantt::-webkit-scrollbar { height: 10px; }
+  .gantt::-webkit-scrollbar-track { background: var(--panel-2); border-radius: 6px; }
+  .gantt::-webkit-scrollbar-thumb { background: var(--line); border-radius: 6px; }
+  .gantt::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+  .g-head { position: sticky; top: 0; z-index: 6; }
+  .g-row, .g-head { display: flex; align-items: stretch; min-height: 38px; }
+  .g-head { min-height: 0; }
+  .g-row { position: relative; }
+  /* Зебра — на всю строку целиком */
+  .g-row:nth-child(odd) { background: var(--panel); }
+  .g-row:nth-child(even) { background: var(--panel-alt); }
+  .g-label {
+    width: 230px; flex: none; font-size: 0.78rem; color: var(--text-dim);
+    padding-left: 0.75rem; padding-right: 10px;
+    position: sticky; left: 0; z-index: 10;
+    background: inherit;
+    display: flex; align-items: center;
+    line-height: 1.2;
+  }
+  .g-label span {
+    overflow: hidden;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  .g-head .g-label { background: var(--panel); z-index: 12; }
+  .g-track { position: relative; flex: none; align-self: stretch; width: var(--track-w, 500px); min-height: 38px; overflow: hidden; background: inherit; }
+  .g-head .g-track { min-height: 0; align-self: auto; }
+  .g-months { height: 22px; border-bottom: 1px solid var(--line); }
+  .g-month {
+    position: absolute; top: 0; height: 22px; font-size: 0.72rem; color: var(--text-faint);
+    border-left: 1px solid var(--line); padding-left: 4px; line-height: 22px;
+    white-space: nowrap; overflow: hidden;
+  }
+  .g-head-days { min-height: 18px; }
+  .g-days { height: 16px; border-bottom: 1px solid var(--line); border-left: 1px solid var(--line); }
+  .g-day {
+    position: absolute; top: 0; height: 16px; line-height: 16px;
+    font-size: 0.6rem; color: var(--text-faint);
+    transform: translateX(-50%); white-space: nowrap;
+  }
+  .g-bar {
+    position: absolute; top: 50%; transform: translateY(-50%); height: 18px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: flex-end;
+    padding: 0 5px; box-sizing: border-box; min-width: 4px;
+  }
+  .g-bar.done {
+    opacity: 0.85;
+    background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.28) 0, rgba(0,0,0,0.28) 3px, transparent 3px, transparent 7px);
+  }
+  .g-bar-h {
+    font-size: 0.65rem;
+    color: #16161a;
+    font-weight: 700;
+    white-space: nowrap;
+    background: rgba(255,255,255,0.75);
+    padding: 0 4px;
+    border-radius: 3px;
+    line-height: 1.3;
+  }
+  .g-bar-h.out {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    background: none;
+    padding: 0;
+    font-weight: 600;
+    line-height: 18px;
+  }
+  .g-today { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--danger); z-index: 1; opacity: 0.7; }
+
+  .gantt-tooltip {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    max-width: 320px;
+    background: #0f0f13;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    pointer-events: none;
+  }
+  .gantt-tooltip b { display: block; font-size: 0.9rem; margin-bottom: 0.3rem; color: var(--text); }
+  .gantt-tooltip .tt-meta { display: block; color: var(--text-dim); font-size: 0.75rem; margin-bottom: 0.4rem; }
+  .gantt-tooltip .tt-line { display: block; color: var(--text); }
+  .gantt-tooltip .tt-dl { color: var(--danger); font-weight: 500; }
+  .gantt-tooltip .tt-comment {
+    display: block;
+    margin-top: 0.45rem;
+    padding-top: 0.45rem;
+    border-top: 1px solid var(--line);
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    font-style: italic;
+  }
+
+  .res-wrap { overflow-x: auto; }
+  .res-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.9rem; flex-wrap: wrap; }
+  .res-src { font-size: 0.82rem; color: var(--text-dim); }
+  .res-load-btn.sm { padding: 0.35rem 0.8rem; font-size: 0.8rem; }
+  .res-load { padding: 1.5rem; text-align: center; color: var(--text-dim); font-size: 0.9rem; }
+  .res-load p { margin-bottom: 1rem; max-width: 480px; margin-left: auto; margin-right: auto; }
+  .res-load-btn {
+    display: inline-block; cursor: pointer;
+    background: var(--panel-2); border: 1px solid var(--line);
+    color: var(--text); padding: 0.5rem 1rem; border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+  }
+  .res-load-btn:hover { border-color: var(--accent); }
+  .res-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .res-table th {
+    text-align: right; padding: 0.6rem 0.7rem; color: var(--text-faint);
+    font-weight: 500; font-size: 0.72rem; border-bottom: 1px solid var(--line);
+    line-height: 1.25; white-space: nowrap;
+  }
+  .res-table th:first-child, .res-table td.r-m { text-align: left; }
+  .res-table td {
+    text-align: right; padding: 0.55rem 0.7rem; font-variant-numeric: tabular-nums;
+    border-bottom: 1px solid var(--line);
+  }
+  .res-table tr:hover td { background: var(--panel-alt); }
+  .res-table .r-m { font-weight: 500; color: var(--text); white-space: nowrap; }
+  .res-table .r-st { text-align: center; }
+  .res-table .ok { color: var(--success); font-size: 1rem; }
+  .res-table .warn { color: var(--warn); font-weight: 500; white-space: nowrap; }
+  .res-table .rest { color: var(--text-dim); font-size: 0.78rem; white-space: nowrap; }
+
+  .empty { color: var(--text-faint); text-align: center; padding: 2rem; font-size: 0.9rem; }
+  footer { margin-top: 2rem; color: var(--text-faint); font-size: 0.78rem; text-align: center; }
+  .err { color: var(--danger); background: var(--warn-bg); border: 1px solid var(--warn); padding: 0.8rem 1rem; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .hidden { display: none; }
+  /* Photo icon + lightbox */
+  .photo-ico {
+    display: inline-flex; align-items: center; gap: 2px;
+    margin-left: 0.4rem; cursor: pointer; font-size: 0.85rem;
+    opacity: 0.75; transition: opacity 0.15s, transform 0.15s;
+    user-select: none; vertical-align: middle;
+  }
+  .photo-ico:hover { opacity: 1; transform: scale(1.15); }
+  .photo-count {
+    font-size: 0.62rem; color: var(--text-dim); background: var(--panel-2);
+    border-radius: 8px; padding: 0 4px; line-height: 1.4; font-weight: 600;
+  }
+  .g-label .photo-ico { margin-left: 0.3rem; flex: 0 0 auto; }
+  .lb-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    display: none; align-items: center; justify-content: center; z-index: 1000;
+    backdrop-filter: blur(2px);
+  }
+  .lb-overlay.open { display: flex; }
+  .lb-img { max-width: 90vw; max-height: 86vh; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+  .lb-close {
+    position: absolute; top: 18px; right: 22px; color: #fff; font-size: 2rem;
+    cursor: pointer; line-height: 1; opacity: 0.8; background: none; border: none;
+  }
+  .lb-close:hover { opacity: 1; }
+  .lb-nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    color: #fff; font-size: 2.6rem; cursor: pointer; opacity: 0.65;
+    background: none; border: none; padding: 0 18px; user-select: none;
+  }
+  .lb-nav:hover { opacity: 1; }
+  .lb-prev { left: 6px; }
+  .lb-next { right: 6px; }
+  .lb-counter {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    color: #fff; font-size: 0.85rem; opacity: 0.8;
+    background: rgba(0,0,0,0.4); padding: 3px 12px; border-radius: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Мои дела</h1>
+    <div class="sub">План по месяцам с подсчётом баланса — из выгрузки Notion</div>
+  </header>
+
+  <div id="drop" class="drop">
+    <strong>Перетащи сюда CSV-файл</strong> или нажми, чтобы выбрать
+    <div class="hint">В Notion: «···» над базой → Export → формат CSV</div>
+  </div>
+  <input type="file" id="file" accept=".csv,text/csv">
+
+  <div id="error" class="err hidden"></div>
+
+  <div id="output"></div>
+
+  <footer>Файл обрабатывается прямо в браузере — ничего никуда не отправляется.</footer>
+</div>
+
+<div id="lightbox" class="lb-overlay">
+  <button class="lb-close" id="lbClose" aria-label="Закрыть">×</button>
+  <button class="lb-nav lb-prev" id="lbPrev" aria-label="Назад">‹</button>
+  <img class="lb-img" id="lbImg" alt="фото">
+  <button class="lb-nav lb-next" id="lbNext" aria-label="Вперёд">›</button>
+  <div class="lb-counter" id="lbCounter"></div>
+</div>
+
+<script>
+const MONTH_ORDER = ["Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь","Январь 2027","Февраль 2027","Март 2027","Апрель 2027","Май 2027","Июнь 2027"];
+
+// Авто-загрузка данных из GitHub (raw). Параметр ?t= — антикэш CDN.
+const CSV_URL = "https://raw.githubusercontent.com/kvitkoas-sudo/dela-images/main/data/dela_notion.csv";
+const RES_URL = "https://raw.githubusercontent.com/kvitkoas-sudo/dela-images/main/data/Resursy.csv";
+
+const drop = document.getElementById('drop');
+const fileInput = document.getElementById('file');
+const output = document.getElementById('output');
+const errorBox = document.getElementById('error');
+
+drop.addEventListener('click', () => fileInput.click());
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', e => {
+  e.preventDefault();
+  drop.classList.remove('over');
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files.length) handleFile(e.target.files[0]);
+});
+
+function handleFile(file) {
+  errorBox.classList.add('hidden');
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const rows = parseCSV(e.target.result);
+      render(rows);
+      drop.classList.add('compact');
+      drop.innerHTML = '<strong>' + file.name + '</strong> загружен — нажми, чтобы выбрать другой';
+    } catch (err) {
+      showError('Не получилось разобрать файл: ' + err.message + '. Проверь, что это CSV-выгрузка из Notion.');
+    }
+  };
+  reader.onerror = () => showError('Не удалось прочитать файл.');
+  reader.readAsText(file, 'utf-8');
+}
+
+// Авто-загрузка данных из GitHub при открытии страницы
+function autoLoadCSV() {
+  drop.classList.add('compact');
+  drop.innerHTML = '<strong>Загружаю данные из GitHub…</strong>';
+  fetch(CSV_URL + '?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+    .then(text => {
+      const rows = parseCSV(text);
+      render(rows);
+      drop.classList.add('compact');
+      drop.innerHTML = '<strong>Данные из GitHub</strong> — обновить: ' +
+        '<a href="#" id="reloadCsv">перезагрузить</a> · или нажми, чтобы выбрать файл вручную';
+      const rl = document.getElementById('reloadCsv');
+      if (rl) rl.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); autoLoadCSV(); });
+    })
+    .catch(() => {
+      drop.classList.remove('compact');
+      drop.innerHTML = '<strong>Перетащи сюда CSV-файл</strong> или нажми, чтобы выбрать' +
+        '<div class="hint">Не удалось загрузить данные из GitHub автоматически — можно указать файл вручную</div>';
+    });
+}
+autoLoadCSV();
+
+// ===== Лайтбокс для фото =====
+let LB_URLS = [];
+let LB_IDX = 0;
+
+function openLightbox(urls, start) {
+  LB_URLS = urls; LB_IDX = start || 0;
+  lbShow();
+  document.getElementById('lightbox').classList.add('open');
+}
+function lbShow() {
+  const img = document.getElementById('lbImg');
+  img.src = LB_URLS[LB_IDX];
+  const multi = LB_URLS.length > 1;
+  document.getElementById('lbPrev').style.display = multi ? '' : 'none';
+  document.getElementById('lbNext').style.display = multi ? '' : 'none';
+  document.getElementById('lbCounter').textContent = multi ? (LB_IDX + 1) + ' / ' + LB_URLS.length : '';
+}
+function lbMove(d) { LB_IDX = (LB_IDX + d + LB_URLS.length) % LB_URLS.length; lbShow(); }
+function lbClose() { document.getElementById('lightbox').classList.remove('open'); document.getElementById('lbImg').src = ''; }
+
+document.getElementById('lbClose').addEventListener('click', lbClose);
+document.getElementById('lbPrev').addEventListener('click', e => { e.stopPropagation(); lbMove(-1); });
+document.getElementById('lbNext').addEventListener('click', e => { e.stopPropagation(); lbMove(1); });
+document.getElementById('lightbox').addEventListener('click', e => { if (e.target.id === 'lightbox') lbClose(); });
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'Escape') lbClose();
+  else if (e.key === 'ArrowLeft' && LB_URLS.length > 1) lbMove(-1);
+  else if (e.key === 'ArrowRight' && LB_URLS.length > 1) lbMove(1);
+});
+
+// Делегирование: клик по иконке 📷 открывает лайтбокс с нужным набором
+document.addEventListener('click', e => {
+  const ico = e.target.closest('.photo-ico');
+  if (!ico) return;
+  e.preventDefault(); e.stopPropagation();
+  const urls = PHOTO_REGISTRY[+ico.dataset.photos];
+  if (urls && urls.length) openLightbox(urls, 0);
+});
+
+function showError(msg) {
+  errorBox.textContent = msg;
+  errorBox.classList.remove('hidden');
+  output.innerHTML = '';
+}
+
+// --- Minimal CSV parser (handles quotes, commas, newlines inside quotes) ---
+function parseCSV(text) {
+  text = text.replace(/^\uFEFF/, ''); // strip BOM
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], next = text[i+1];
+    if (inQuotes) {
+      if (c === '"' && next === '"') { field += '"'; i++; }
+      else if (c === '"') { inQuotes = false; }
+      else { field += c; }
+    } else {
+      if (c === '"') { inQuotes = true; }
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\r') { /* skip */ }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else { field += c; }
+    }
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  if (!rows.length) throw new Error('пустой файл');
+
+  const header = rows[0].map(h => h.trim());
+  const data = rows.slice(1).filter(r => r.some(v => v.trim() !== ''));
+  return data.map(r => {
+    const obj = {};
+    header.forEach((h, i) => obj[h] = (r[i] || '').trim());
+    return obj;
+  });
+}
+
+// Find a column by trying several possible names
+function pick(obj, names) {
+  for (const n of names) {
+    for (const key in obj) {
+      if (key.toLowerCase() === n.toLowerCase()) return obj[key];
+    }
+  }
+  return '';
+}
+
+function parseAmount(raw) {
+  if (!raw) return 0;
+  // keep digits and minus; handle spaces, ₽, non-breaking spaces, − sign
+  const cleaned = raw.replace(/\u2212/g, '-').replace(/[^\d-]/g, '');
+  const n = parseInt(cleaned, 10);
+  return isNaN(n) ? 0 : n;
+}
+
+function fmt(n) {
+  const sign = n > 0 ? '+' : n < 0 ? '−' : '';
+  const abs = Math.abs(n).toLocaleString('ru-RU');
+  return sign + abs + ' ₽';
+}
+
+function fmtShort(n) {
+  return Math.abs(n).toLocaleString('ru-RU').replace(/\s/g, '\u00A0') + '\u00A0₽';
+}
+
+function parseHours(raw) {
+  if (!raw) return 0;
+  const cleaned = raw.replace(',', '.').replace(/[^\d.]/g, '');
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? 0 : n;
+}
+
+function fmtHours(n) {
+  if (!n) return '';
+  // trim trailing .0
+  const v = Number.isInteger(n) ? n : Math.round(n * 10) / 10;
+  return v.toLocaleString('ru-RU') + ' ч';
+}
+
+const MONTHS_EN = {january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
+
+function parseDeadline(raw) {
+  if (!raw) return null;
+  raw = raw.trim();
+  // ISO: 2026-07-30
+  let m = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  // Notion English: "July 30, 2026"
+  m = raw.match(/([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})/);
+  if (m && MONTHS_EN[m[1].toLowerCase()] !== undefined) return new Date(+m[3], MONTHS_EN[m[1].toLowerCase()], +m[2]);
+  // Russian dotted: 30.07.2026
+  m = raw.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
+  return null;
+}
+
+function fmtDeadline(raw) {
+  const d = parseDeadline(raw);
+  if (!d) return '';
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  return 'до ' + dd + '.' + mm;
+}
+
+let ALL_TASKS = null;
+let CURRENT_DIM = 'month';
+let CURRENT_VIEW = 'list';
+let PHOTO_REGISTRY = [];  // idx -> массив URL для лайтбокса
+
+// Иконка 📷 с привязкой к набору фото
+function photoIcon(urls) {
+  const idx = PHOTO_REGISTRY.push(urls) - 1;
+  const n = urls.length > 1 ? '<span class="photo-count">' + urls.length + '</span>' : '';
+  return '<span class="photo-ico" data-photos="' + idx + '" title="Фото: ' + urls.length + '">📷' + n + '</span>';
+}
+
+function actionType(t) {
+  if (t.amount < 0) return 'Купить';
+  if (t.amount > 0) return 'Продать';
+  return 'Сделать';
+}
+
+const PRIORITY_ORDER = ['Высокий','Средний','Низкий','Обсудить'];
+const ACTION_ORDER = ['Купить','Сделать','Продать'];
+
+function render(rows) {
+  const tasks = rows.map(r => ({
+    name: pick(r, ['Задача','Name','Task']),
+    category: pick(r, ['Категория','Category']),
+    status: pick(r, ['Статус','Status']),
+    month: pick(r, ['Месяц','Month']),
+    priority: pick(r, ['Приоритет','Priority']),
+    comment: pick(r, ['Комментарий','Comment','Note']),
+    amount: parseAmount(pick(r, ['Сумма','Amount','Price'])),
+    hours: parseHours(pick(r, ['Трудоёмкость, ч.','Трудоемкость, ч.','Трудоёмкость','Трудоемкость','Hours','Effort'])),
+    deadline: pick(r, ['Дедлайн','Deadline','Due','Due date']),
+    start: pick(r, ['Старт','Start']),
+    finish: pick(r, ['Финиш','Finish','End']),
+    photos: (pick(r, ['Фото','Photos','Images']) || '').split('|').map(s => s.trim()).filter(Boolean)
+  })).filter(t => t.name);
+
+  if (!tasks.length) { showError('В файле не нашлось задач. Проверь, что экспорт содержит колонку «Задача».'); return; }
+
+  ALL_TASKS = tasks;
+
+  let html = '';
+  html += '<div class="totals" id="totals"></div>';
+
+  // Toolbar: dimension segmented control + completed toggle
+  const done = tasks.filter(t => t.status === 'Выполнено');
+  html += '<div class="toolbar">';
+  html += '<div class="segment" id="viewmode">' +
+          '<button class="seg active" data-view="list">Список</button>' +
+          '<button class="seg" data-view="gantt">Гант</button>' +
+          '<button class="seg" data-view="res">Ресурсы</button>' +
+          '</div>';
+  html += '<div class="segment" id="segment">' +
+          seg('month','Месяц') + seg('priority','Приоритет') +
+          seg('category','Категория') + seg('action','Тип действия') +
+          '</div>';
+  if (done.length) {
+    html += '<label class="switch">' +
+            '<input type="checkbox" id="toggleDone" checked>' +
+            '<span class="track"><span class="thumb"></span></span>' +
+            '<span class="switch-label">Выполненные (' + done.length + ')</span>' +
+            '</label>';
+  }
+  html += '</div>';
+
+  html += '<div id="groups"></div>';
+
+  output.innerHTML = html;
+
+  // Wire view mode
+  document.querySelectorAll('#viewmode .seg').forEach(btn => {
+    btn.addEventListener('click', () => {
+      CURRENT_VIEW = btn.dataset.view;
+      document.querySelectorAll('#viewmode .seg').forEach(b => b.classList.toggle('active', b === btn));
+      // segment (dimension) only matters in list mode
+      document.getElementById('segment').style.display = (CURRENT_VIEW === 'gantt' || CURRENT_VIEW === 'res') ? 'none' : '';
+      renderGroups();
+    });
+  });
+
+  // Wire dimension segment
+  document.querySelectorAll('#segment .seg').forEach(btn => {
+    btn.addEventListener('click', () => {
+      CURRENT_DIM = btn.dataset.dim;
+      document.querySelectorAll('#segment .seg').forEach(b => b.classList.toggle('active', b === btn));
+      renderGroups();
+    });
+  });
+
+  // Wire completed toggle
+  const toggle = document.getElementById('toggleDone');
+  if (toggle) toggle.addEventListener('change', renderGroups);
+
+  renderGroups();
+}
+
+function seg(dim, label) {
+  return '<button class="seg' + (dim === CURRENT_DIM ? ' active' : '') + '" data-dim="' + dim + '">' + label + '</button>';
+}
+
+// Returns {key, order} for grouping a task under the current dimension
+function groupInfo(t, dim) {
+  if (dim === 'month')    return { key: t.month || '— без месяца —', order: idxOr(MONTH_ORDER, t.month) };
+  if (dim === 'priority') return { key: t.priority || '— без приоритета —', order: idxOr(PRIORITY_ORDER, t.priority) };
+  if (dim === 'category') return { key: t.category || '— без категории —', order: 999 };
+  if (dim === 'action')   { const a = actionType(t); return { key: a, order: idxOr(ACTION_ORDER, a) }; }
+  return { key: '—', order: 999 };
+}
+function idxOr(arr, v) { const i = arr.indexOf(v); return i === -1 ? 998 : i; }
+
+function renderGroups() {
+  if (CURRENT_VIEW === 'gantt') { renderGantt(); return; }
+  if (CURRENT_VIEW === 'res') { renderResources(); return; }
+  PHOTO_REGISTRY = [];
+  const showDone = !!(document.getElementById('toggleDone') && document.getElementById('toggleDone').checked);
+
+  // Карточки итогов — подчиняются переключателю «Выполненные»
+  const totalsEl = document.getElementById('totals');
+  if (totalsEl) {
+    const scope = showDone ? ALL_TASKS : ALL_TASKS.filter(t => t.status !== 'Выполнено');
+    let tExp = 0, tInc = 0;
+    scope.forEach(t => { if (t.amount < 0) tExp += t.amount; else tInc += t.amount; });
+    totalsEl.innerHTML =
+      tcard('Всего расходы', tExp, 'neg') +
+      tcard('Всего доходы', tInc, 'pos') +
+      tcard('Итого', tExp + tInc, (tExp + tInc) < 0 ? 'neg' : 'pos');
+  }
+
+  // Задачи под текущим разрезом; выполненные включаются в группы при showDone
+  const pool = showDone ? ALL_TASKS : ALL_TASKS.filter(t => t.status !== 'Выполнено');
+
+  let html = '';
+
+  const groups = {};
+  const gorder = {};
+  pool.forEach(t => {
+    const gi = groupInfo(t, CURRENT_DIM);
+    (groups[gi.key] = groups[gi.key] || []).push(t);
+    gorder[gi.key] = gi.order;
+  });
+
+  // Порядок групп зависит от разреза:
+  // month — по минимальной дате Старт; priority/action — по фиксированному порядку; category — по алфавиту
+  const orderMap = {};
+  if (CURRENT_DIM === 'month') {
+    Object.keys(groups).forEach(k => {
+      let min = Infinity;
+      groups[k].forEach(t => {
+        const d = parseDeadline(t.start);
+        if (d && d.getTime() < min) min = d.getTime();
+      });
+      orderMap[k] = min;
+    });
+  } else {
+    Object.keys(groups).forEach(k => { orderMap[k] = gorder[k]; });
+  }
+
+  const keys = Object.keys(groups).sort((a, b) => {
+    if (CURRENT_DIM === 'category') return a.localeCompare(b, 'ru');
+    if (orderMap[a] !== orderMap[b]) return orderMap[a] - orderMap[b];
+    return a.localeCompare(b, 'ru');
+  });
+
+  keys.forEach(key => {
+    const items = groups[key];
+    // Невыполненные — по дате старта; выполненные — в конце
+    items.sort((a, b) => {
+      const ad = a.status === 'Выполнено', bd = b.status === 'Выполнено';
+      if (ad !== bd) return ad ? 1 : -1;
+      const da = parseDeadline(a.start), db = parseDeadline(b.start);
+      if (da && db) return da - db;
+      if (da) return -1;
+      if (db) return 1;
+      return 0;
+    });
+    const gsum = items.reduce((s, t) => s + t.amount, 0);
+    const ghours = items.reduce((s, t) => s + t.hours, 0);
+    html += '<div class="month">';
+    html += '<div class="month-head"><h2>' + esc(key) + '</h2>' +
+            '<span class="head-meta">' +
+            '<span class="startdate"></span>' +
+            '<span class="hsum">' + (ghours ? fmtHours(ghours) : '') + '</span>' +
+            '<span class="msum ' + (gsum >= 0 ? 'pos' : '') + '">' + (gsum !== 0 ? fmt(gsum) : '') + '</span>' +
+            '</span></div>';
+    html += '<div class="rows">';
+    items.forEach(t => { html += taskRow(t); });
+    html += '</div></div>';
+  });
+
+  document.getElementById('groups').innerHTML = html;
+}
+
+// Доступные ресурсы по месяцам — грузятся из Ресурсы.csv (та же папка) или вручную
+let RES_AVAIL = null;
+let RES_SRC = '';
+const RES_ORDER = ['Июль 26','Август 26','Сентябрь 26','Октябрь 26','Ноябрь 26','Декабрь 26','Январь 2027','Февраль 2027','Март 2027','Апрель 2027'];
+
+// Приводит "Август" и "Август 26" к единому ключу
+function normMonth(m) {
+  if (!m) return '';
+  return m.replace(/\s+\d{2,4}\s*$/,'').trim(); // убираем год в конце ("26" или "2027")
+}
+
+function parseResCSV(text) {
+  const rows = parseCSV(text);
+  const map = {};
+  rows.forEach(r => {
+    const m = pick(r, ['Месяц','Month']);
+    if (!m) return;
+    map[normMonth(m)] = {
+      budget: parseAmount(pick(r, ['Бюджет доступно','Budget'])),
+      hours: parseHours(pick(r, ['Часы доступно','Hours']))
+    };
+  });
+  return map;
+}
+
+function renderResources() {
+  if (!RES_AVAIL) {
+    // Загружаем ресурсы из GitHub (антикэш ?t=)
+    document.getElementById('groups').innerHTML = '<div class="empty">Загружаю ресурсы из GitHub…</div>';
+    fetch(RES_URL + '?t=' + Date.now(), { cache: 'no-store' })
+      .then(r => { if (!r.ok) throw new Error('no file'); return r.text(); })
+      .then(text => { RES_AVAIL = parseResCSV(text); RES_SRC = 'GitHub'; renderResources(); })
+      .catch(() => {
+        document.getElementById('groups').innerHTML =
+          '<div class="res-load">' +
+          '<p>Не удалось загрузить ресурсы из GitHub автоматически. Выбери файл ресурсов вручную.</p>' +
+          '<label class="res-load-btn">Выбрать файл ресурсов<input type="file" id="resFile" accept=".csv" style="display:none"></label>' +
+          '</div>';
+        const inp = document.getElementById('resFile');
+        if (inp) inp.addEventListener('change', e => loadResFile(e.target.files[0]));
+      });
+    return;
+  }
+
+  // План по месяцам из активных задач
+  const plan = {};
+  ALL_TASKS.filter(t => t.status !== 'Выполнено' && t.month).forEach(t => {
+    const key = normMonth(t.month);
+    const p = plan[key] || (plan[key] = { spend: 0, hours: 0 });
+    if (t.amount < 0) p.spend += -t.amount;
+    p.hours += t.hours || 0;
+  });
+
+  // Список месяцев в правильном порядке
+  const seen = {};
+  const months = [];
+  RES_ORDER.forEach(m => { const k = normMonth(m); if (!seen[k] && (RES_AVAIL[k] || plan[k])) { seen[k]=1; months.push({disp:m, key:k}); } });
+  Object.keys(RES_AVAIL).concat(Object.keys(plan)).forEach(k => { if (!seen[k]) { seen[k]=1; months.push({disp:k, key:k}); } });
+
+  let rows = '';
+  months.forEach(({disp, key}) => {
+    const av = RES_AVAIL[key] || { budget: 0, hours: 0 };
+    const pl = plan[key] || { spend: 0, hours: 0 };
+    const dHours = av.hours - pl.hours;
+    const dMoney = av.budget - pl.spend;
+    const okTime = dHours > -2;
+    const okMoney = dMoney > -5000;
+    rows +=
+      '<tr>' +
+      '<td class="r-m">' + esc(disp) + '</td>' +
+      '<td>' + av.budget.toLocaleString('ru-RU') + '</td>' +
+      '<td>' + pl.spend.toLocaleString('ru-RU') + '</td>' +
+      '<td>' + av.hours + '</td>' +
+      '<td>' + pl.hours + '</td>' +
+      '<td class="r-st">' + statusCell(okTime, dHours, 'ч') + '</td>' +
+      '<td class="r-st">' + statusCell(okMoney, dMoney, '₽') + '</td>' +
+      '</tr>';
+  });
+
+  document.getElementById('groups').innerHTML =
+    '<div class="res-toolbar">' +
+      '<span class="res-src">' + (RES_SRC ? 'Ресурсы: <b>' + esc(RES_SRC) + '</b>' : '') + '</span>' +
+      '<label class="res-load-btn sm">Выбрать файл ресурсов<input type="file" id="resFile2" accept=".csv" style="display:none"></label>' +
+    '</div>' +
+    '<div class="res-wrap"><table class="res-table">' +
+    '<thead><tr>' +
+    '<th>Месяц</th><th>Бюджет<br>доступно</th><th>Расход<br>план</th>' +
+    '<th>Часы<br>доступно</th><th>Часы<br>план</th>' +
+    '<th>Статус<br>по времени</th><th>Статус<br>по сумме</th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+
+  const inp2 = document.getElementById('resFile2');
+  if (inp2) inp2.addEventListener('change', e => loadResFile(e.target.files[0]));
+}
+
+// Загрузка файла ресурсов вручную
+function loadResFile(file) {
+  if (!file) return;
+  const rd = new FileReader();
+  rd.onload = ev => { RES_AVAIL = parseResCSV(ev.target.result); RES_SRC = file.name; renderResources(); };
+  rd.readAsText(file, 'utf-8');
+}
+
+function statusCell(ok, delta, unit) {
+  const fmtVal = n => (unit === '₽' ? Math.abs(n).toLocaleString('ru-RU') : Math.abs(n)) + ' ' + unit;
+  if (ok) {
+    if (delta > 0) return '<span class="ok">✓</span> <span class="rest">+' + fmtVal(delta) + '</span>';
+    return '<span class="ok">✓</span>';
+  }
+  return '<span class="warn">⚠ −' + fmtVal(delta) + '</span>';
+}
+
+function taskRow(t) {
+  const done = t.status === 'Выполнено';
+  let h = '<div class="row' + (done ? ' done' : '') + '">';
+  h += '<div class="task">';
+  if (t.priority) h += '<span class="prio-dot prio-' + esc(t.priority) + '" title="' + esc(t.priority) + '"></span>';
+  h += '<span class="name">' + esc(t.name) + '</span>';
+  if (t.photos && t.photos.length) h += photoIcon(t.photos);
+  if (t.deadline) { const dl = fmtDeadline(t.deadline); if (dl) h += '<span class="deadline">' + dl + '</span>'; }
+  if (t.category) h += '<span class="cat">' + esc(t.category) + '</span>';
+  h += '</div>';
+  h += '<span class="row-meta">';
+  { const sd = parseDeadline(t.start); h += '<span class="startdate">' + (sd ? String(sd.getDate()).padStart(2,'0') + '.' + String(sd.getMonth()+1).padStart(2,'0') : '') + '</span>'; }
+  h += '<span class="hours">' + (t.hours ? fmtHours(t.hours) : '') + '</span>';
+  h += '<span class="amount ' + (t.amount < 0 ? 'neg' : t.amount > 0 ? 'pos' : '') + '">' + (t.amount !== 0 ? fmt(t.amount) : '') + '</span>';
+  h += '</span>';
+  h += '</div>';
+  if (t.comment) h += '<div class="comment">' + esc(t.comment) + '</div>';
+  return h;
+}
+
+const PRIO_COLORS = {
+  'Высокий':'#d98686', 'Средний':'#e0a878', 'Низкий':'#7c9eff'
+};
+
+function renderGantt() {
+  PHOTO_REGISTRY = [];
+  // Parse tasks that have valid start/finish
+  const items = ALL_TASKS.map(t => {
+    const s = parseDeadline(t.start);
+    const e = parseDeadline(t.finish) || s;
+    return s ? { t, s, e: (e && e >= s ? e : s) } : null;
+  }).filter(Boolean).sort((a,b) => a.s - b.s);
+
+  if (!items.length) {
+    document.getElementById('groups').innerHTML =
+      '<div class="empty">Нет задач с датами «Старт»/«Финиш».</div>';
+    return;
+  }
+
+  // Timeline bounds: first day of start month → last day of end month
+  const minD = items.reduce((m,x) => x.s < m ? x.s : m, items[0].s);
+  const maxD = items.reduce((m,x) => x.e > m ? x.e : m, items[0].e);
+  const t0 = new Date(minD.getFullYear(), minD.getMonth(), 1);
+  const t1 = new Date(maxD.getFullYear(), maxD.getMonth()+1, 0);
+  const totalDays = Math.round((t1 - t0) / 86400000) + 1;
+  const pos = d => ((d - t0) / 86400000) / totalDays * 100;
+
+  const MN = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+  // Month header cells: "Июль 26"
+  let months = '';
+  let cur = new Date(t0);
+  while (cur <= t1) {
+    const mStart = new Date(cur.getFullYear(), cur.getMonth(), 1);
+    const mEnd = new Date(cur.getFullYear(), cur.getMonth()+1, 0);
+    const left = pos(mStart < t0 ? t0 : mStart);
+    const width = (Math.round((mEnd - mStart)/86400000)+1) / totalDays * 100;
+    months += '<div class="g-month" style="left:' + left + '%;width:' + width + '%">' +
+              MN[cur.getMonth()] + ' ' + String(cur.getFullYear()).slice(2) + '</div>';
+    cur = new Date(cur.getFullYear(), cur.getMonth()+1, 1);
+  }
+
+  // Day ticks (second row): одна отметка на выходные — по субботам
+  let days = '';
+  let dcur = new Date(t0);
+  while (dcur <= t1) {
+    if (dcur.getDay() === 6) { // суббота — начало рабочего уик-энда
+      const left = pos(dcur);
+      days += '<div class="g-day" style="left:' + left + '%">' + dcur.getDate() + '</div>';
+    }
+    dcur = new Date(dcur.getFullYear(), dcur.getMonth(), dcur.getDate()+1);
+  }
+
+  // Today marker
+  const today = new Date(); today.setHours(0,0,0,0);
+  let todayMark = '';
+  if (today >= t0 && today <= t1) {
+    todayMark = '<div class="g-today" style="left:' + pos(today) + '%" title="сегодня"></div>';
+  }
+
+  // Rows
+  let rows = '';
+  GANTT_TIPS = [];
+  const dateRu = d => d ? String(d.getDate()).padStart(2,'0') + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + d.getFullYear() : '';
+  items.forEach(({t, s, e}, i) => {
+    const left = pos(s);
+    const width = Math.max((Math.round((e - s)/86400000)+1) / totalDays * 100, 1.2);
+    const color = PRIO_COLORS[t.priority] || '#8a8a95';
+    const done = t.status === 'Выполнено';
+    const hLabel = fmtHours(t.hours);
+    const aLabel = t.amount ? '(' + fmtShort(t.amount) + ')' : '';
+    const label = [hLabel, aLabel].filter(Boolean).join(' · ');
+    const narrow = width < 14; // узкая полоска — подпись снаружи
+
+    // Собираем полную информацию для тултипа (готовый HTML, хранится в массиве)
+    const tip = [];
+    tip.push('<b>' + esc(t.name) + '</b>');
+    const meta = [];
+    if (t.category) meta.push(esc(t.category));
+    if (t.status) meta.push(esc(t.status));
+    if (t.priority) meta.push('приоритет: ' + esc(t.priority));
+    if (meta.length) tip.push('<span class="tt-meta">' + meta.join(' · ') + '</span>');
+    const period = dateRu(s) + (e && e.getTime() !== s.getTime() ? ' – ' + dateRu(e) : '');
+    const startMonth = MN[s.getMonth()] + ' ' + String(s.getFullYear()).slice(2);
+    tip.push('<span class="tt-line">📅 ' + period + '  (' + startMonth + ')</span>');
+    if (t.hours) tip.push('<span class="tt-line">⏱ ' + fmtHours(t.hours) + '</span>');
+    if (t.amount) tip.push('<span class="tt-line">💰 ' + fmt(t.amount) + '</span>');
+    const dl = fmtDeadline(t.deadline);
+    if (dl) tip.push('<span class="tt-line tt-dl">⚑ дедлайн ' + dl.replace('до ','') + '</span>');
+    if (t.comment) tip.push('<span class="tt-comment">' + esc(t.comment) + '</span>');
+    GANTT_TIPS.push(tip.join(''));
+
+    rows += '<div class="g-row">' +
+            '<div class="g-label" title="' + esc(t.name) + '"><span>' + esc(t.name) + '</span>' +
+            (t.photos && t.photos.length ? photoIcon(t.photos) : '') +
+            '</div>' +
+            '<div class="g-track">' + todayMark +
+            '<div class="g-bar' + (done ? ' done' : '') + (narrow ? ' narrow' : '') + '" style="left:' + left + '%;width:' + width + '%;background-color:' + color + '" ' +
+            'data-tip="' + i + '">' +
+            (label && !narrow ? '<span class="g-bar-h">' + label + '</span>' : '') +
+            '</div>' +
+            (label && narrow ? '<span class="g-bar-h out" style="left:calc(' + (left + width) + '% + 4px);color:' + color + '">' + label + '</span>' : '') +
+            '</div></div>';
+  });
+
+  // Ширина временной зоны: ~9px на день. Колонка имён закреплена слева.
+  const trackW = Math.max(totalDays * 9, 500);
+
+  document.getElementById('groups').innerHTML =
+    '<div class="gantt">' +
+    '<div class="gantt-inner" style="--track-w:' + trackW + 'px">' +
+    '<div class="g-head">' +
+      '<div class="g-label"></div>' +
+      '<div class="g-track g-months">' + months + '</div>' +
+    '</div>' +
+    '<div class="g-head g-head-days">' +
+      '<div class="g-label"></div>' +
+      '<div class="g-track g-days">' + days + '</div>' +
+    '</div>' +
+    rows +
+    '</div>' +
+    '</div>';
+
+  wireGanttTooltip();
+}
+
+let GANTT_TIPS = [];
+
+// Единый плавающий тултип для баров Ганта
+function wireGanttTooltip() {
+  let tip = document.getElementById('gantt-tooltip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'gantt-tooltip';
+    tip.className = 'gantt-tooltip';
+    document.body.appendChild(tip);
+  }
+  const bars = document.querySelectorAll('.g-bar[data-tip]');
+  bars.forEach(bar => {
+    bar.addEventListener('mouseenter', () => {
+      const idx = +bar.getAttribute('data-tip');
+      tip.innerHTML = GANTT_TIPS[idx] || '';
+      tip.style.display = 'block';
+    });
+    bar.addEventListener('mousemove', (ev) => {
+      const pad = 14;
+      let x = ev.clientX + pad, y = ev.clientY + pad;
+      const r = tip.getBoundingClientRect();
+      if (x + r.width > window.innerWidth - 8) x = ev.clientX - r.width - pad;
+      if (y + r.height > window.innerHeight - 8) y = ev.clientY - r.height - pad;
+      tip.style.left = x + 'px';
+      tip.style.top = y + 'px';
+    });
+    bar.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+  });
+}
+
+function tcard(label, val, cls) {
+  return '<div class="tcard"><div class="label">' + label + '</div>' +
+         '<div class="val ' + cls + '">' + fmt(val) + '</div></div>';
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+</body>
+</html>
