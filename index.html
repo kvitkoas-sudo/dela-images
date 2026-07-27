@@ -387,6 +387,7 @@
   .res-table .warn { color: var(--warn); font-weight: 500; white-space: nowrap; }
   .res-table .rest { color: var(--text-dim); font-size: 0.78rem; white-space: nowrap; }
   .res-table td.fact { color: var(--text-dim); }
+  .res-table td.plan-dim { color: var(--text-dim); }
   .res-table td.rest-col { font-weight: 500; white-space: nowrap; }
   .res-table td.rest-col.neg { color: var(--warn); }
   .res-table .prog { color: var(--warn); font-size: 0.78rem; white-space: nowrap; }
@@ -933,13 +934,11 @@ function renderResources() {
     rows +=
       '<tr>' +
       '<td class="r-m">' + esc(disp) + '</td>' +
-      '<td>' + pl.spend.toLocaleString('ru-RU') + '</td>' +
-      '<td class="fact">' + (pl.factSpend ? pl.factSpend.toLocaleString('ru-RU') : '—') + '</td>' +
+      '<td class="plan-dim">' + pl.spend.toLocaleString('ru-RU') + '</td>' +
+      '<td>' + (pl.factSpend ? pl.factSpend.toLocaleString('ru-RU') : '—') + '</td>' +
       '<td class="rest-col">' + restMoney.toLocaleString('ru-RU') + '</td>' +
-      '<td>' + pl.hours + '</td>' +
-      '<td class="fact">' + (pl.factHours ? pl.factHours : '—') + '</td>' +
-      '<td class="r-st">' + progressCell(pl.factHours, pl.hours, 'ч') + '</td>' +
-      '<td class="r-st">' + progressCell(pl.factSpend, pl.spend, '₽') + '</td>' +
+      '<td class="plan-dim">' + pl.hours + '</td>' +
+      '<td>' + (pl.factHours ? pl.factHours : '—') + '</td>' +
       '</tr>';
   });
 
@@ -952,7 +951,6 @@ function renderResources() {
     '<thead><tr>' +
     '<th>Месяц</th><th>Расход<br>план</th><th>Расход<br>факт</th><th>Остаток</th>' +
     '<th>Часы<br>план</th><th>Часы<br>факт</th>' +
-    '<th>Статус<br>по времени</th><th>Статус<br>по сумме</th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table></div>';
 
   const inp2 = document.getElementById('resFile2');
