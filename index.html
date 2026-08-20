@@ -1030,8 +1030,10 @@ const PRIO_COLORS = {
 
 function renderGantt() {
   PHOTO_REGISTRY = [];
+  const showDone = !!(document.getElementById('toggleDone') && document.getElementById('toggleDone').checked);
+  const source = showDone ? ALL_TASKS : ALL_TASKS.filter(t => t.status !== 'Выполнено');
   // Parse tasks that have valid start/finish
-  const items = ALL_TASKS.map(t => {
+  const items = source.map(t => {
     const s = parseDeadline(t.start);
     const e = parseDeadline(t.finish) || s;
     return s ? { t, s, e: (e && e >= s ? e : s) } : null;
