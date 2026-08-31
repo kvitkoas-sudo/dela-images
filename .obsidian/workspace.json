@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "6c10d343f3a6695e",
+        "id": "3dc62bc6784059cf",
         "type": "tabs",
         "children": [
           {
-            "id": "0a1fc3609a5d2bca",
+            "id": "7e12b49afc573102",
             "type": "leaf",
             "state": {
               "type": "empty",
@@ -192,10 +192,11 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "0a1fc3609a5d2bca",
+  "active": "7e12b49afc573102",
   "lastOpenFiles": [
-    "документы/README.md",
+    "документы/Отзывы о магазине масла на ozon ООО ИНТЕРАВТО-ЭВЕНТ.md",
     "документы/Официальные поставщики масла Hyundai_Kia.md",
-    "документы/Чат_Масло_группа_Hyundai.md"
+    "документы/Чат_Масло_группа_Hyundai.md",
+    "документы/README.md"
   ]
 }
