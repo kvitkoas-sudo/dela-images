@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "документы/Чат_Масло_группа_Hyundai.md",
+                "file": "Официальные поставщики масла Hyundai_Kia.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Чат_Масло_группа_Hyundai"
+              "title": "Официальные поставщики масла Hyundai_Kia"
             }
           }
         ]
@@ -99,7 +99,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "документы/Чат_Масло_группа_Hyundai.md",
+                "file": "Официальные поставщики масла Hyundai_Kia.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,7 +118,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "документы/Чат_Масло_группа_Hyundai.md",
+                "file": "Официальные поставщики масла Hyundai_Kia.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -161,7 +161,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "документы/Чат_Масло_группа_Hyundai.md",
+                "file": "Официальные поставщики масла Hyundai_Kia.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -201,7 +201,7 @@
   },
   "active": "6d38122567701afd",
   "lastOpenFiles": [
-    "Официальные поставщики масла Hyundai_Kia.md",
-    "документы/Чат_Масло_группа_Hyundai.md"
+    "документы/Чат_Масло_группа_Hyundai.md",
+    "Официальные поставщики масла Hyundai_Kia.md"
   ]
 }
