@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "85a3401d4e3e6e09",
+        "id": "9ffe281aac4b67e7",
         "type": "tabs",
         "children": [
           {
-            "id": "6d38122567701afd",
+            "id": "9833560bdfed2256",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Официальные поставщики масла Hyundai_Kia.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "Официальные поставщики масла Hyundai_Kia"
+              "title": "Новая вкладка"
             }
           }
         ]
@@ -99,7 +95,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Официальные поставщики масла Hyundai_Kia.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,7 +113,6 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Официальные поставщики масла Hyundai_Kia.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -161,7 +155,6 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Официальные поставщики масла Hyundai_Kia.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -199,9 +192,9 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "6d38122567701afd",
+  "active": "7faf7f9f7efc9925",
   "lastOpenFiles": [
-    "документы/Чат_Масло_группа_Hyundai.md",
-    "Официальные поставщики масла Hyundai_Kia.md"
+    "документы/Официальные поставщики масла Hyundai_Kia.md",
+    "документы/Чат_Масло_группа_Hyundai.md"
   ]
 }
