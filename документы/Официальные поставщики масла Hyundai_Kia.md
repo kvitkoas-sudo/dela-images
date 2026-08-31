@@ -120,6 +120,5 @@
 ## Связанные
 
 - [[Масло_Hyundai_Tucson_NX4_сводная]]
-- [[Hyundai_Tucson_NX4_1.5_TGDi_рекомендованные_жидкости]]
 
 <!-- AUTO-LINKS:END -->
