@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "9ffe281aac4b67e7",
+        "id": "6c10d343f3a6695e",
         "type": "tabs",
         "children": [
           {
-            "id": "9833560bdfed2256",
+            "id": "0a1fc3609a5d2bca",
             "type": "leaf",
             "state": {
               "type": "empty",
@@ -192,8 +192,9 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "7faf7f9f7efc9925",
+  "active": "0a1fc3609a5d2bca",
   "lastOpenFiles": [
+    "документы/README.md",
     "документы/Официальные поставщики масла Hyundai_Kia.md",
     "документы/Чат_Масло_группа_Hyundai.md"
   ]
