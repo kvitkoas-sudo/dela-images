@@ -11,10 +11,10 @@
             "id": "7e12b49afc573102",
             "type": "leaf",
             "state": {
-              "type": "empty",
+              "type": "graph",
               "state": {},
-              "icon": "lucide-file",
-              "title": "Новая вкладка"
+              "icon": "lucide-git-fork",
+              "title": "Граф"
             }
           }
         ]
@@ -194,9 +194,11 @@
   },
   "active": "7e12b49afc573102",
   "lastOpenFiles": [
+    "черновики/README.md",
+    "документы/README.md",
+    "README.md",
     "документы/Отзывы о магазине масла на ozon ООО ИНТЕРАВТО-ЭВЕНТ.md",
     "документы/Официальные поставщики масла Hyundai_Kia.md",
-    "документы/Чат_Масло_группа_Hyundai.md",
-    "документы/README.md"
+    "документы/Чат_Масло_группа_Hyundai.md"
   ]
 }
