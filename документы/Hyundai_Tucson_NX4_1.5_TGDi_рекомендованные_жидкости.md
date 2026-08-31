@@ -49,9 +49,7 @@
 <!-- AUTO-LINKS:START -->
 ## Связанные
 
+- [[Масло_Hyundai_Tucson_NX4_сводная]]
 - [[Официальные поставщики масла Hyundai_Kia]]
-- [[Чат_Масло_группа_Hyundai]]
-- [[tucson_nx4_zhidkosti]]
-- [[Отзывы о магазине масла на ozon ООО ИНТЕРАВТО-ЭВЕНТ]]
 
 <!-- AUTO-LINKS:END -->
